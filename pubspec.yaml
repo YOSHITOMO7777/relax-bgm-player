@@ -22,6 +22,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+  pedantic_mono: any
 
 # The following section is specific to Flutter packages.
 flutter:
