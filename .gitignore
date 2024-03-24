@@ -32,6 +32,9 @@ migrate_working_dir/
 .pub/
 /build/
 
+# FLutter
+pubspec.lock
+
 # Symbolication related
 app.*.symbols
 

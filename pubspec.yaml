@@ -10,18 +10,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
   just_audio: ^0.9.36
   audio_session: ^0.1.18
-  hooks_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
   import_sorter: ^4.6.0
 
-
 dev_dependencies:
+  flutter_lints: ^2.0.0
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
   pedantic_mono: any
 
 # The following section is specific to Flutter packages.

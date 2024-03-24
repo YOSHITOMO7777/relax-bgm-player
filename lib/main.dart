@@ -103,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (context, snapshot) {
                 final playerState = snapshot.data;
                 return _playerButton(playerState!);
-              }),
+              },),
           ],
         ),
       ),
