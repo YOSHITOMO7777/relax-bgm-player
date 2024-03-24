@@ -1,48 +1,11 @@
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
   runApp(
-    const ProviderScope(
-      child: MyApp()
-    ),
+      const MyApp(),
   );
-}
-
-final toggleSNP =
-    StateNotifierProvider<ToggleSN, bool>((ref) => ToggleSN());
-
-class ToggleSN extends StateNotifier<bool> {
-  ToggleSN() : super(true) {
-    // superには初期値を渡す
-    soundPlayerInit();
-  }
-
-  void soundPlayerInit() async {
-    // 音楽プレーヤーを初期化したりする
-    state = true;
-    soundControl();
-  }
-
-  void toggle() {
-    state = !state;
-    soundControl();
-  }
-
-  void change({required bool flag}) {
-    state = flag;
-    soundControl();
-  }
-
-  void soundControl() {
-    if (state == true) {
-      debugPrint('[soundControl]PLAY');
-    } else {
-      debugPrint('[soundControl]STOP');
-    }
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -51,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'RelaxMusicPlayer',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -82,22 +45,14 @@ class _MyHomePageState extends State<MyHomePage> {
       switch(event.processingState) {
         case ProcessingState.idle:
           debugPrint('オーディオファイルをロードしていないよ');
-          break;
         case ProcessingState.loading:
           debugPrint('オーディオファイルをロード中だよ');
-          break;
         case ProcessingState.buffering:
           debugPrint('バッファリング(読み込み)中だよ');
-          break;
         case ProcessingState.ready:
           debugPrint('再生できるよ');
-          break;
         case ProcessingState.completed:
           debugPrint('再生終了したよ');
-          break;
-        default:
-          debugPrint(event.processingState.toString());
-          break;
       }
     });
   }
@@ -114,17 +69,18 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _loadAudioFile() async {
     try {
       await _player.setAsset('assets/audio/bgm_sea.mp3');
-    } catch(e) {
+    } on Exception catch(e) {
       debugPrint(e as String?);
     }
   }
 
   // 再生・停止
-  Future<void> _play(ref) async {
-    // state==true:再生中, state==false:停止中
-    ref.read(toggleSNP.notifier).toggle();
-    ref.read(toggleSNP.notifier).state ?
-      await _player.stop() : await _player.play();
+  void _playMusic(PlayerState playerState) {
+    if(playerState.playing) {
+      _player.stop();
+    } else {
+      _player.play();
+    }
   }
 
   @override
@@ -141,16 +97,25 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text(
               'You can start BGM !!',
             ),
-            Consumer(builder: (context, ref, child) {
-              final isFlag = ref.watch(toggleSNP);
-              return FilledButton(
-                onPressed: () async => await _play(ref),
-                child: Icon((isFlag) ? Icons.play_arrow : Icons.pause),
-              );
-            }),
+            // ボタンアイコンを再生状態によって変化させるためのストリーム
+            StreamBuilder(
+              stream: _player.playerStateStream,
+              builder: (context, snapshot) {
+                final playerState = snapshot.data;
+                return _playerButton(playerState!);
+              },),
           ],
         ),
       ),
     );
+  }
+
+  // 再生状態によってアイコンが変化するボタン
+  Widget _playerButton(PlayerState playerState) {
+    return
+      FilledButton(
+        onPressed: () => _playMusic(playerState),
+        child: Icon(playerState.playing ? Icons.pause : Icons.play_arrow,),
+      );
   }
 }
